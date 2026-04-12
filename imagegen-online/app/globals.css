@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #ffffff;
+  --text: #000000;
+  --border: #000000;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #fff;
+}
+::-webkit-scrollbar-thumb {
+  background: #000;
+}
+
+/* Tool card hover */
+.tool-card {
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.tool-card:hover {
+  background: #000;
+  color: #fff;
+}
+.tool-card:hover .tool-card-btn {
+  background: #fff;
+  color: #000;
+  border-color: #fff;
+}
+
+/* Upload drag active */
+.upload-drag-active {
+  background: #f0f0f0;
+}
+
+/* Accordion transition */
+.accordion-content {
+  overflow: hidden;
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+/* Active nav link */
+.nav-link {
+  position: relative;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #000;
+  transition: width 0.2s ease;
+}
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Slider custom */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 2px;
+  background: #000;
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  background: #000;
+  cursor: pointer;
+  border: 2px solid #fff;
+  outline: 2px solid #000;
+}
+
+/* Radio custom */
+input[type="radio"] {
+  accent-color: #000;
+}
+
+/* Thumbnail */
+.img-thumb {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+  animation: fadeInUp 0.25s ease forwards;
+}
