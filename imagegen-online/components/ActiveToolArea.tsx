@@ -2,26 +2,21 @@
 
 import { useEffect, useState, lazy, Suspense } from "react";
 import { getToolById } from "@/lib/tools";
-import { getToolMeta } from "@/lib/toolConfigs";
 
+// Lazy-load every tool component
 const MultiImageCompressor = lazy(() => import("./tools/MultiImageCompressor"));
-const UniversalImageTool = lazy(() => import("./tools/UniversalImageTool"));
-const ComplexTool = lazy(() => import("./tools/ComplexTool"));
+const UniversalImageTool   = lazy(() => import("./tools/UniversalImageTool"));
+const RemoveBackground     = lazy(() => import("./tools/RemoveBackground"));
+const MergeImages          = lazy(() => import("./tools/MergeImages"));
+const SplitImage           = lazy(() => import("./tools/SplitImage"));
+const CollageMaker         = lazy(() => import("./tools/CollageMaker"));
 
-// Tools that use the bulk multi-image compressor UI
-const BULK_COMPRESS_TOOLS = new Set([
+// Tools that use the bulk multi-compressor UI
+const BULK_COMPRESS = new Set([
   "bulk-image-compressor",
   "compress-for-web",
   "compress-for-email",
   "compress-for-social",
-]);
-
-// Tools that need complex/server-side processing
-const COMPLEX_TOOLS = new Set([
-  "remove-background",
-  "merge-images",
-  "split-image",
-  "collage-maker",
 ]);
 
 function ToolLoader() {
@@ -37,28 +32,24 @@ function ToolLoader() {
   );
 }
 
-function ToolComponent({ toolId }: { toolId: string }) {
-  const meta = getToolMeta(toolId);
-
-  if (BULK_COMPRESS_TOOLS.has(toolId)) {
-    return <MultiImageCompressor />;
-  }
-  if (COMPLEX_TOOLS.has(toolId)) {
-    return <ComplexTool toolId={toolId} />;
-  }
-  // All other tools — universal handler
-  // "image-compressor" also goes to UniversalImageTool (single file compress)
+function ToolRouter({ toolId }: { toolId: string }) {
+  if (BULK_COMPRESS.has(toolId))         return <MultiImageCompressor />;
+  if (toolId === "remove-background")    return <RemoveBackground />;
+  if (toolId === "merge-images")         return <MergeImages />;
+  if (toolId === "split-image")          return <SplitImage />;
+  if (toolId === "collage-maker")        return <CollageMaker />;
+  // All remaining 45 tools → universal handler
   return <UniversalImageTool toolId={toolId} key={toolId} />;
 }
 
 export default function ActiveToolArea({ activeTool }: { activeTool: string }) {
   const tool = getToolById(activeTool);
   const [mounted, setMounted] = useState(false);
-  const [key, setKey] = useState(0);
+  const [renderKey, setRenderKey] = useState(0);
 
   useEffect(() => {
     setMounted(false);
-    const t = setTimeout(() => { setMounted(true); setKey((k) => k + 1); }, 40);
+    const t = setTimeout(() => { setMounted(true); setRenderKey((k) => k + 1); }, 40);
     return () => clearTimeout(t);
   }, [activeTool]);
 
@@ -68,7 +59,7 @@ export default function ActiveToolArea({ activeTool }: { activeTool: string }) {
       <div className="flex items-center gap-2 mb-3">
         <span className="font-mono text-xs text-black/30 uppercase tracking-widest">imagegen.online</span>
         <span className="font-mono text-xs text-black/30">/</span>
-        <span className="font-mono text-xs text-black uppercase tracking-widest">
+        <span className="font-mono text-xs text-black uppercase tracking-widest font-bold">
           {tool?.name ?? activeTool}
         </span>
       </div>
@@ -77,7 +68,7 @@ export default function ActiveToolArea({ activeTool }: { activeTool: string }) {
       <div className="border-2 border-black rounded-xl p-5 md:p-8 bg-white">
         {mounted ? (
           <Suspense fallback={<ToolLoader />}>
-            <ToolComponent toolId={activeTool} key={key} />
+            <ToolRouter toolId={activeTool} key={renderKey} />
           </Suspense>
         ) : (
           <ToolLoader />
