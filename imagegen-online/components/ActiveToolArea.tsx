@@ -2,62 +2,82 @@
 
 import { useEffect, useState, lazy, Suspense } from "react";
 import { getToolById } from "@/lib/tools";
+import { getToolMeta } from "@/lib/toolConfigs";
 
 const MultiImageCompressor = lazy(() => import("./tools/MultiImageCompressor"));
-const PlaceholderTool = lazy(() => import("./tools/PlaceholderTool"));
+const UniversalImageTool = lazy(() => import("./tools/UniversalImageTool"));
+const ComplexTool = lazy(() => import("./tools/ComplexTool"));
 
-interface ActiveToolAreaProps {
-  activeTool: string;
-}
+// Tools that use the bulk multi-image compressor UI
+const BULK_COMPRESS_TOOLS = new Set([
+  "bulk-image-compressor",
+  "compress-for-web",
+  "compress-for-email",
+  "compress-for-social",
+]);
+
+// Tools that need complex/server-side processing
+const COMPLEX_TOOLS = new Set([
+  "remove-background",
+  "merge-images",
+  "split-image",
+  "collage-maker",
+]);
 
 function ToolLoader() {
   return (
     <div className="flex items-center justify-center py-20">
       <div className="flex gap-1.5">
         {[0, 1, 2].map((i) => (
-          <span
-            key={i}
-            className="w-2 h-2 bg-black rounded-full animate-bounce"
-            style={{ animationDelay: `${i * 0.15}s` }}
-          />
+          <span key={i} className="w-2 h-2 bg-black rounded-full animate-bounce"
+            style={{ animationDelay: `${i * 0.15}s` }} />
         ))}
       </div>
     </div>
   );
 }
 
-export default function ActiveToolArea({ activeTool }: ActiveToolAreaProps) {
+function ToolComponent({ toolId }: { toolId: string }) {
+  const meta = getToolMeta(toolId);
+
+  if (BULK_COMPRESS_TOOLS.has(toolId)) {
+    return <MultiImageCompressor />;
+  }
+  if (COMPLEX_TOOLS.has(toolId)) {
+    return <ComplexTool toolId={toolId} />;
+  }
+  // All other tools — universal handler
+  // "image-compressor" also goes to UniversalImageTool (single file compress)
+  return <UniversalImageTool toolId={toolId} key={toolId} />;
+}
+
+export default function ActiveToolArea({ activeTool }: { activeTool: string }) {
   const tool = getToolById(activeTool);
   const [mounted, setMounted] = useState(false);
+  const [key, setKey] = useState(0);
 
   useEffect(() => {
     setMounted(false);
-    const t = setTimeout(() => setMounted(true), 30);
+    const t = setTimeout(() => { setMounted(true); setKey((k) => k + 1); }, 40);
     return () => clearTimeout(t);
   }, [activeTool]);
 
   return (
-    <section id="active-tool" className="w-full max-w-screen-xl mx-auto px-4 py-8 md:py-12">
+    <section id="active-tool" className="w-full max-w-screen-xl mx-auto px-4 py-8 md:py-10">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 mb-4">
-        <span className="font-mono text-xs text-black/30 uppercase tracking-widest">
-          imagegen.online
-        </span>
+      <div className="flex items-center gap-2 mb-3">
+        <span className="font-mono text-xs text-black/30 uppercase tracking-widest">imagegen.online</span>
         <span className="font-mono text-xs text-black/30">/</span>
         <span className="font-mono text-xs text-black uppercase tracking-widest">
           {tool?.name ?? activeTool}
         </span>
       </div>
 
-      {/* Tool Container */}
-      <div className="border-2 border-black rounded-xl p-6 md:p-8 bg-white">
+      {/* Tool container */}
+      <div className="border-2 border-black rounded-xl p-5 md:p-8 bg-white">
         {mounted ? (
           <Suspense fallback={<ToolLoader />}>
-            {activeTool === "bulk-image-compressor" || activeTool === "image-compressor" ? (
-              <MultiImageCompressor />
-            ) : (
-              <PlaceholderTool toolName={tool?.name ?? activeTool} toolId={activeTool} />
-            )}
+            <ToolComponent toolId={activeTool} key={key} />
           </Suspense>
         ) : (
           <ToolLoader />
