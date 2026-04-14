@@ -10,6 +10,9 @@ const RemoveBackground     = lazy(() => import("./tools/RemoveBackground"));
 const MergeImages          = lazy(() => import("./tools/MergeImages"));
 const SplitImage           = lazy(() => import("./tools/SplitImage"));
 const CollageMaker         = lazy(() => import("./tools/CollageMaker"));
+const ColorPalette         = lazy(() => import("./tools/ColorPalette"));
+const CompressTarget       = lazy(() => import("./tools/CompressTarget"));
+const MetadataRemover      = lazy(() => import("./tools/MetadataRemover"));
 
 // Tools that use the bulk multi-compressor UI
 const BULK_COMPRESS = new Set([
@@ -17,6 +20,17 @@ const BULK_COMPRESS = new Set([
   "compress-for-web",
   "compress-for-email",
   "compress-for-social",
+  "compress-instagram",
+  "facebook-optimizer",
+  "whatsapp-optimizer",
+  "compress-whatsapp",
+]);
+
+// Tools that use CompressTarget (binary-search to size)
+const COMPRESS_TARGET = new Set([
+  "compress-under-100kb",
+  "compress-under-50kb",
+  "smart-compress",
 ]);
 
 function ToolLoader() {
@@ -34,11 +48,14 @@ function ToolLoader() {
 
 function ToolRouter({ toolId }: { toolId: string }) {
   if (BULK_COMPRESS.has(toolId))         return <MultiImageCompressor />;
+  if (COMPRESS_TARGET.has(toolId))       return <CompressTarget toolId={toolId} />;
   if (toolId === "remove-background")    return <RemoveBackground />;
   if (toolId === "merge-images")         return <MergeImages />;
-  if (toolId === "split-image")          return <SplitImage />;
+  if (toolId === "split-image" || toolId === "instagram-carousel") return <SplitImage />;
   if (toolId === "collage-maker")        return <CollageMaker />;
-  // All remaining 45 tools → universal handler
+  if (toolId === "color-palette")        return <ColorPalette />;
+  if (toolId === "remove-metadata")      return <MetadataRemover />;
+  // All remaining tools → universal handler
   return <UniversalImageTool toolId={toolId} key={toolId} />;
 }
 

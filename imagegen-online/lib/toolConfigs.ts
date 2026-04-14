@@ -1,5 +1,6 @@
 export type ToolGroup =
   | "compress"
+  | "compress-target"
   | "resize"
   | "rotate"
   | "flip"
@@ -12,7 +13,11 @@ export type ToolGroup =
   | "crop"
   | "text"
   | "sharpen"
-  | "complex";
+  | "complex"
+  | "metadata"
+  | "palette"
+  | "lossless"
+  | "safezone";
 
 export interface ResizePreset {
   label: string;
@@ -29,7 +34,7 @@ export interface ToolMeta {
   adjustMax?: number;
   adjustDefault?: number;
   adjustUnit?: string;
-  effectType?: "grayscale" | "invert" | "sepia" | "blur-bg" | "noise" | "edge";
+  effectType?: "grayscale" | "invert" | "sepia" | "blur-bg" | "noise" | "edge" | "remove-border";
   convertFrom?: string;
   convertTo?: string;
   resizePreset?: ResizePreset;
@@ -94,7 +99,7 @@ export const TOOL_META: Record<string, ToolMeta> = {
   "square-maker":           { group: "square",    label: "Square Image Maker",        description: "Convert image to perfect square" },
   "circle-maker":           { group: "circle",    label: "Circle Image Maker",        description: "Crop image into circle shape" },
   "add-border":             { group: "border",    label: "Add Border to Image",       description: "Add custom borders around images" },
-  "remove-border":          { group: "effect",    label: "Remove Border",             description: "Auto-detect and remove image borders", effectType: "grayscale" },
+  "remove-border":          { group: "effect",    label: "Remove Border",             description: "Auto-detect and remove white image borders", effectType: "remove-border" },
 
   // ─── Crop ────────────────────────────────────────────────
   "image-crop":             { group: "crop",      label: "Image Crop",                description: "Crop images to any shape or ratio" },
@@ -102,6 +107,44 @@ export const TOOL_META: Record<string, ToolMeta> = {
   // ─── Text / Watermark ────────────────────────────────────
   "watermark":              { group: "text",      label: "Image Watermark",           description: "Add text or logo watermarks to images" },
   "add-text":               { group: "text",      label: "Add Text to Image",         description: "Overlay custom text onto images" },
+
+  // ─── Lossless / Metadata ─────────────────────────────────
+  "lossless-convert":       { group: "lossless",  label: "Convert Without Loss",      description: "Convert image to lossless PNG — zero quality degradation" },
+  "lossless-compress":      { group: "lossless",  label: "Lossless Image Compressor", description: "Compress image without any quality loss using PNG" },
+  "remove-metadata":        { group: "metadata",  label: "Remove Image Metadata",     description: "Strip EXIF data, GPS, camera info from images privately" },
+  "color-palette":          { group: "palette",   label: "Color Palette Extractor",   description: "Extract dominant colors from any image as hex codes" },
+
+  // ─── Target-size compressor ──────────────────────────────
+  "compress-under-100kb":   { group: "compress-target", label: "Compress Under 100KB", description: "Automatically compress image to under 100KB" },
+  "compress-under-50kb":    { group: "compress-target", label: "Compress Under 50KB",  description: "Automatically compress image to under 50KB" },
+  "smart-compress":         { group: "compress-target", label: "Smart Image Compressor", description: "Intelligently compress to your custom target size" },
+
+  // ─── Instagram tools ─────────────────────────────────────
+  "instagram-story":        { group: "resize",    label: "Instagram Story Resizer",   description: "Resize image to 1080×1920 for Instagram Stories", resizePreset: { label: "Story", width: 1080, height: 1920 } },
+  "instagram-reel":         { group: "resize",    label: "Instagram Reel Thumbnail",  description: "Resize to 1080×1920 for Instagram Reels cover", resizePreset: { label: "Reel", width: 1080, height: 1920 } },
+  "instagram-dp":           { group: "resize",    label: "Instagram DP Size Converter", description: "Resize image to 320×320 for Instagram profile display", resizePreset: { label: "DP", width: 320, height: 320 } },
+  "instagram-profile-pic":  { group: "resize",    label: "Instagram Profile Picture Resizer", description: "Resize to perfect Instagram profile photo dimensions", resizePreset: { label: "Profile", width: 320, height: 320 } },
+  "instagram-square":       { group: "square",    label: "Instagram Square Image Maker", description: "Convert any image to 1:1 square for Instagram posts" },
+  "instagram-carousel":     { group: "complex",   label: "Instagram Carousel Splitter", description: "Split wide image into multiple carousel panels" },
+  "instagram-safe-zone":    { group: "safezone",  label: "Instagram Story Safe Zone", description: "Add story safe-zone overlay to avoid UI elements cutting content" },
+  "compress-instagram":     { group: "compress",  label: "Compress for Instagram",    description: "Compress and optimise images for Instagram upload", bulk: true },
+
+  // ─── WhatsApp tools ──────────────────────────────────────
+  "whatsapp-dp":            { group: "resize",    label: "WhatsApp DP Image Resizer", description: "Resize image to 640×640 for WhatsApp profile photo", resizePreset: { label: "WA DP", width: 640, height: 640 } },
+  "whatsapp-status":        { group: "resize",    label: "WhatsApp Status Image Size", description: "Resize image to 1080×1920 for WhatsApp status", resizePreset: { label: "WA Status", width: 1080, height: 1920 } },
+  "whatsapp-profile-crop":  { group: "square",    label: "WhatsApp Profile Photo Crop", description: "Crop image to perfect square for WhatsApp profile" },
+  "whatsapp-square":        { group: "square",    label: "WhatsApp Square Image Maker", description: "Convert image to square for WhatsApp sharing" },
+  "whatsapp-image-size":    { group: "resize",    label: "WhatsApp Image Size Converter", description: "Convert image to recommended WhatsApp size (1600×900)", resizePreset: { label: "WhatsApp", width: 1600, height: 900 } },
+  "whatsapp-optimizer":     { group: "compress",  label: "WhatsApp Image Optimizer",  description: "Compress and optimise images for WhatsApp sharing" },
+  "compress-whatsapp":      { group: "compress",  label: "Compress Image for WhatsApp", description: "Reduce file size for fast WhatsApp sharing" },
+
+  // ─── Facebook tools ──────────────────────────────────────
+  "facebook-cover":         { group: "resize",    label: "Facebook Cover Photo Resizer", description: "Resize image to 820×312 for Facebook cover", resizePreset: { label: "FB Cover", width: 820, height: 312 } },
+  "facebook-profile-pic":   { group: "resize",    label: "Facebook Profile Picture Size", description: "Resize image to 320×320 for Facebook profile photo", resizePreset: { label: "FB Profile", width: 320, height: 320 } },
+  "facebook-ads":           { group: "resize",    label: "Facebook Ads Image Resizer",  description: "Resize to 1200×628 for Facebook ad creatives", resizePreset: { label: "FB Ads", width: 1200, height: 628 } },
+  "facebook-square":        { group: "square",    label: "Facebook Square Image Maker", description: "Convert any image to perfect square for Facebook" },
+  "facebook-story":         { group: "resize",    label: "Facebook Story Image Resizer", description: "Resize to 1080×1920 for Facebook Stories", resizePreset: { label: "FB Story", width: 1080, height: 1920 } },
+  "facebook-optimizer":     { group: "compress",  label: "Facebook Image Optimizer",    description: "Compress and optimise images for Facebook upload", bulk: true },
 
   // ─── Complex (needs ML/server) ───────────────────────────
   "remove-background":      { group: "complex",   label: "Remove Background",         description: "Auto remove image background — requires AI API" },

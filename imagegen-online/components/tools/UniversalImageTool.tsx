@@ -121,7 +121,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
         opts.sharpenAmount = sharpenAmt;
         break;
       case "effect":
-        opts.effect = meta.effectType as "grayscale" | "invert" | "sepia";
+        opts.effect = meta.effectType as "grayscale" | "invert" | "sepia" | "remove-border";
         break;
       case "square":
         opts.squareBg = squareBg;
@@ -153,11 +153,18 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
       case "compress":
         // quality already set
         break;
+      case "lossless":
+        opts.lossless = true;
+        opts.outputFormat = "png";
+        break;
+      case "safezone":
+        opts.safeZoneOverlay = true;
+        break;
     }
     return opts;
   }, [meta, resizeW, resizeH, maintainRatio, fit, angle, flipH, flipV, adjustVal, sharpenAmt, quality, squareBg, borderSize, borderColor, cropX, cropY, cropW, cropH, textVal, textSize, textColor, textOpacity, textPos, convertFmt]);
 
-  // ─── Live CSS filter preview (instant, no canvas) ──────────────────────
+  // ─── Live CSS filter preview (instant, no canvas) ──────────
   const liveFilter = (() => {
     if (meta.group !== "adjust" && meta.group !== "effect") return "";
     if (meta.group === "adjust") {
@@ -597,7 +604,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
                 <div>
                   <label className="font-mono text-xs text-black/50 block mb-1">Position</label>
                   <div className="grid grid-cols-3 gap-1">
-                    {["top-left","top-center-h","top-right","center-v","center","bottom-right","bottom-left","bottom-center-h","bottom-right"].filter((v,i,a)=>a.indexOf(v)===i).map((p) => (
+                    {["top-left","top-center-h","top-right","center-v","center","center-right","bottom-left","bottom-center-h","bottom-right"].map((p) => (
                       <button key={p} onClick={() => setTextPos(p)}
                         className={`font-mono text-xs px-2 py-1 border border-black hover:bg-black hover:text-white transition-colors truncate ${textPos === p ? "bg-black text-white" : ""}`}>
                         {p.replace(/-/g," ")}
@@ -605,6 +612,26 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
                     ))}
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* ── LOSSLESS (no controls needed) ── */}
+            {meta.group === "lossless" && (
+              <div className="space-y-2">
+                <div className="border border-black/20 px-3 py-2 bg-black/[0.02]">
+                  <p className="font-mono text-xs">Output format: <strong>PNG (lossless)</strong> — zero quality degradation.</p>
+                </div>
+                <p className="font-mono text-xs text-black/40">PNG stores every pixel exactly. Ideal for graphics, logos, screenshots, and anything where pixel-perfect accuracy matters.</p>
+              </div>
+            )}
+
+            {/* ── SAFE ZONE (no controls needed) ── */}
+            {meta.group === "safezone" && (
+              <div className="space-y-2">
+                <div className="border border-black/20 px-3 py-2 bg-black/[0.02]">
+                  <p className="font-mono text-xs">Adds a <strong>yellow safe-zone overlay</strong> showing the safe content area for Instagram/Facebook Stories.</p>
+                </div>
+                <p className="font-mono text-xs text-black/40">The shaded areas at top/bottom may be covered by the platform UI. Keep important content inside the dashed box.</p>
               </div>
             )}
 

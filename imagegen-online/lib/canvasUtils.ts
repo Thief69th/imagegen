@@ -14,7 +14,7 @@ export interface ProcessOptions {
   // sharpen
   sharpenAmount?: number;
   // effect
-  effect?: "grayscale" | "invert" | "sepia";
+  effect?: "grayscale" | "invert" | "sepia" | "remove-border";
   // square
   squareBg?: string;
   // circle
@@ -38,6 +38,12 @@ export interface ProcessOptions {
   // convert
   outputFormat?: string; // "jpg" | "png" | "webp"
   quality?: number; // 1–100
+  // lossless: force PNG output at 100% (no quality loss)
+  lossless?: boolean;
+  // metadata removal: re-encode to strip EXIF (canvas already strips it)
+  removeMetadata?: boolean;
+  // safe zone overlay for stories
+  safeZoneOverlay?: boolean;
 }
 
 // ─── Load image from File ───────────────────────────────────────────────────
@@ -173,9 +179,6 @@ export async function processImage(file: File, opts: ProcessOptions): Promise<Bl
   }
 
   // ── Circle maker ───────────────────────────────────────────
-  if (opts.effect === "grayscale" && file.name.includes("__circle")) {
-    // handled below
-  }
   const isCircle = opts.outputFormat === "__circle";
   if (isCircle) {
     const size = Math.min(origW, origH);
@@ -240,6 +243,39 @@ export async function processImage(file: File, opts: ProcessOptions): Promise<Bl
     return toBlob(canvas, opts);
   }
 
+  // ── Remove Border ─────────────────────────────────────────
+  if (opts.effect === "remove-border") {
+    canvas.width = origW;
+    canvas.height = origH;
+    const ctx = canvas.getContext("2d")!;
+    ctx.drawImage(img, 0, 0);
+    const id = ctx.getImageData(0, 0, origW, origH);
+    const d = id.data;
+    const isBorderPixel = (x: number, y: number) => {
+      const i = (y * origW + x) * 4;
+      return d[i] > 230 && d[i+1] > 230 && d[i+2] > 230;
+    };
+    let top = 0, bottom = origH - 1, left = 0, right = origW - 1;
+    while (top < origH && Array.from({length: origW}, (_,x) => isBorderPixel(x, top)).every(Boolean)) top++;
+    while (bottom > top && Array.from({length: origW}, (_,x) => isBorderPixel(x, bottom)).every(Boolean)) bottom--;
+    while (left < origW && Array.from({length: origH}, (_,y) => isBorderPixel(left, y)).every(Boolean)) left++;
+    while (right > left && Array.from({length: origH}, (_,y) => isBorderPixel(right, y)).every(Boolean)) right--;
+    const cropW = right - left + 1;
+    const cropH = bottom - top + 1;
+    const out = document.createElement("canvas");
+    out.width = cropW; out.height = cropH;
+    out.getContext("2d")!.drawImage(canvas, left, top, cropW, cropH, 0, 0, cropW, cropH);
+    return toBlob(out, opts);
+  }
+
+  // ── Lossless (force PNG) ───────────────────────────────────
+  if (opts.lossless) {
+    canvas.width = origW;
+    canvas.height = origH;
+    canvas.getContext("2d")!.drawImage(img, 0, 0);
+    return toBlob(canvas, { ...opts, outputFormat: "png", quality: 100 });
+  }
+
   // ── CSS Filter adjust (blur, brightness, contrast, saturate) ─
   canvas.width = origW;
   canvas.height = origH;
@@ -258,7 +294,6 @@ export async function processImage(file: File, opts: ProcessOptions): Promise<Bl
 
   // ── Grayscale pixels ──────────────────────────────────────
   if (opts.effect === "grayscale") {
-    ctx.filter = "grayscale(100%)";
     const tempCanvas = document.createElement("canvas");
     tempCanvas.width = origW;
     tempCanvas.height = origH;
@@ -280,6 +315,26 @@ export async function processImage(file: File, opts: ProcessOptions): Promise<Bl
     tCtx.drawImage(img, 0, 0);
     ctx.clearRect(0, 0, origW, origH);
     ctx.drawImage(tempCanvas, 0, 0);
+  }
+
+  // ── Safe Zone Overlay (Instagram/Story) ───────────────────
+  if (opts.safeZoneOverlay) {
+    const zoneX = Math.round(origW * 0.083);
+    const zoneY = Math.round(origH * 0.152);
+    const zoneW = origW - zoneX * 2;
+    const zoneH = origH - zoneY * 2;
+    ctx.strokeStyle = "rgba(255,255,0,0.9)";
+    ctx.lineWidth = 3;
+    ctx.setLineDash([12, 6]);
+    ctx.strokeRect(zoneX, zoneY, zoneW, zoneH);
+    ctx.setLineDash([]);
+    ctx.fillStyle = "rgba(0,0,0,0.55)";
+    ctx.fillRect(0, 0, origW, zoneY);
+    ctx.fillRect(0, origH - zoneY, origW, zoneY);
+    ctx.fillStyle = "rgba(255,255,0,0.9)";
+    ctx.font = `bold ${Math.round(origW * 0.03)}px Arial, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.fillText("SAFE ZONE", origW / 2, zoneY - 10);
   }
 
   return toBlob(canvas, opts);
@@ -333,4 +388,109 @@ export function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+}
+
+// ─── Color palette extraction ──────────────────────────────────────────────
+export async function extractColorPalette(
+  file: File,
+  count = 8
+): Promise<string[]> {
+  const img = await loadImage(file);
+  const size = 150; // downsample for speed
+  const canvas = document.createElement("canvas");
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext("2d")!;
+  ctx.drawImage(img, 0, 0, size, size);
+  const { data } = ctx.getImageData(0, 0, size, size);
+
+  // Median-cut: bucket pixels into 8-bit quantized buckets
+  const buckets: Map<string, number> = new Map();
+  for (let i = 0; i < data.length; i += 4) {
+    const r = Math.round(data[i] / 32) * 32;
+    const g = Math.round(data[i + 1] / 32) * 32;
+    const b = Math.round(data[i + 2] / 32) * 32;
+    if (data[i + 3] < 128) continue; // skip transparent
+    const key = `${r},${g},${b}`;
+    buckets.set(key, (buckets.get(key) ?? 0) + 1);
+  }
+
+  // Sort by frequency, deduplicate by minimum distance
+  const sorted = Array.from(buckets.entries()).sort((a, b) => b[1] - a[1]);
+  const palette: string[] = [];
+  for (const [key] of sorted) {
+    const [r, g, b] = key.split(",").map(Number);
+    const hex = "#" + [r, g, b].map((v) => Math.min(255, v).toString(16).padStart(2, "0")).join("");
+    // Ensure minimum perceptual distance from existing colors
+    const tooClose = palette.some((existing) => {
+      const er = parseInt(existing.slice(1, 3), 16);
+      const eg = parseInt(existing.slice(3, 5), 16);
+      const eb = parseInt(existing.slice(5, 7), 16);
+      return Math.abs(er - r) < 40 && Math.abs(eg - g) < 40 && Math.abs(eb - b) < 40;
+    });
+    if (!tooClose) palette.push(hex);
+    if (palette.length >= count) break;
+  }
+  return palette;
+}
+
+// ─── Binary-search compress to target size ─────────────────────────────────
+export async function compressToTargetSize(
+  file: File,
+  targetKB: number
+): Promise<Blob> {
+  const img = await loadImage(file);
+  const canvas = document.createElement("canvas");
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  canvas.getContext("2d")!.drawImage(img, 0, 0);
+
+  const targetBytes = targetKB * 1024;
+  let lo = 1, hi = 95, bestBlob: Blob | null = null;
+
+  for (let iter = 0; iter < 10; iter++) {
+    const mid = Math.round((lo + hi) / 2);
+    const blob = await new Promise<Blob>((res, rej) =>
+      canvas.toBlob(
+        (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
+        "image/jpeg",
+        mid / 100
+      )
+    );
+    if (blob.size <= targetBytes) {
+      bestBlob = blob;
+      lo = mid + 1;
+    } else {
+      hi = mid - 1;
+    }
+    if (lo > hi) break;
+  }
+
+  // If even quality=1 is too large, scale down
+  if (!bestBlob) {
+    const scaleCanvas = document.createElement("canvas");
+    let scale = 0.9;
+    while (scale > 0.1) {
+      scaleCanvas.width = Math.round(img.naturalWidth * scale);
+      scaleCanvas.height = Math.round(img.naturalHeight * scale);
+      scaleCanvas.getContext("2d")!.drawImage(img, 0, 0, scaleCanvas.width, scaleCanvas.height);
+      const blob = await new Promise<Blob>((res, rej) =>
+        scaleCanvas.toBlob(
+          (b) => (b ? res(b) : rej(new Error("toBlob failed"))),
+          "image/jpeg",
+          0.5
+        )
+      );
+      if (blob.size <= targetBytes) { bestBlob = blob; break; }
+      scale -= 0.1;
+    }
+  }
+
+  if (!bestBlob) {
+    // Return lowest quality as fallback
+    return new Promise<Blob>((res, rej) =>
+      canvas.toBlob((b) => (b ? res(b) : rej()), "image/jpeg", 0.01)
+    );
+  }
+  return bestBlob;
 }

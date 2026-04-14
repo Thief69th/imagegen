@@ -65,6 +65,44 @@ export const TOOLS: Tool[] = [
   { id: "tiff-to-jpg", name: "TIFF to JPG", description: "Convert TIFF images to JPG format", category: "Convert" },
   { id: "batch-convert", name: "Batch Image Convert", description: "Convert many images between formats", category: "Convert" },
 
+  // Lossless / Metadata / Palette
+  { id: "lossless-convert", name: "Convert Without Loss", description: "Convert image to lossless PNG — zero quality loss", category: "Convert" },
+  { id: "lossless-compress", name: "Lossless Image Compressor", description: "Compress image without any quality loss", category: "Compress" },
+  { id: "remove-metadata", name: "Remove Image Metadata", description: "Strip EXIF data, GPS location, camera info — 100% private", category: "Convert" },
+  { id: "color-palette", name: "Color Palette Extractor", description: "Extract dominant color palette from any image", category: "Effects" },
+
+  // Target-size compress
+  { id: "compress-under-100kb", name: "Compress Under 100KB", description: "Auto-compress image to under 100KB file size", category: "Compress" },
+  { id: "compress-under-50kb", name: "Compress Under 50KB", description: "Auto-compress image to under 50KB file size", category: "Compress" },
+  { id: "smart-compress", name: "Smart Image Compressor", description: "Compress to your custom target file size", category: "Compress" },
+
+  // Instagram
+  { id: "instagram-story", name: "Instagram Story Size Tool", description: "Resize to 1080×1920 for Instagram Stories", category: "Instagram" },
+  { id: "instagram-reel", name: "Instagram Reel Thumbnail Maker", description: "Resize to 1080×1920 for Instagram Reels cover", category: "Instagram" },
+  { id: "instagram-dp", name: "Instagram DP Size Converter", description: "Resize to 320×320 for Instagram profile picture", category: "Instagram" },
+  { id: "instagram-profile-pic", name: "Instagram Profile Picture Resizer", description: "Perfect dimensions for Instagram profile photo", category: "Instagram" },
+  { id: "instagram-square", name: "Instagram Square Image Maker", description: "Convert any image to 1:1 square for Instagram", category: "Instagram" },
+  { id: "instagram-carousel", name: "Instagram Carousel Image Splitter", description: "Split wide image into carousel panels", category: "Instagram" },
+  { id: "instagram-safe-zone", name: "Instagram Story Safe Zone Tool", description: "Overlay safe-zone guide onto story images", category: "Instagram" },
+  { id: "compress-instagram", name: "Compress Image for Instagram", description: "Compress and optimise images for Instagram upload", category: "Instagram" },
+
+  // WhatsApp
+  { id: "whatsapp-dp", name: "WhatsApp DP Image Resizer", description: "Resize to 640×640 for WhatsApp profile photo", category: "WhatsApp" },
+  { id: "whatsapp-status", name: "WhatsApp Status Image Size Tool", description: "Resize to 1080×1920 for WhatsApp Status", category: "WhatsApp" },
+  { id: "whatsapp-profile-crop", name: "WhatsApp Profile Photo Crop Tool", description: "Square crop for perfect WhatsApp profile photo", category: "WhatsApp" },
+  { id: "whatsapp-square", name: "WhatsApp Square Image Maker", description: "Convert any image to square for WhatsApp", category: "WhatsApp" },
+  { id: "whatsapp-image-size", name: "WhatsApp Image Size Converter", description: "Convert image to recommended 1600×900 WhatsApp size", category: "WhatsApp" },
+  { id: "whatsapp-optimizer", name: "WhatsApp Image Optimizer Tool", description: "Optimise and compress images for WhatsApp", category: "WhatsApp" },
+  { id: "compress-whatsapp", name: "Compress Image for WhatsApp", description: "Reduce file size for fast WhatsApp sharing", category: "WhatsApp" },
+
+  // Facebook
+  { id: "facebook-cover", name: "Facebook Cover Photo Resizer Tool", description: "Resize to 820×312 for Facebook cover photo", category: "Facebook" },
+  { id: "facebook-profile-pic", name: "Facebook Profile Picture Size Tool", description: "Resize to 320×320 for Facebook profile photo", category: "Facebook" },
+  { id: "facebook-ads", name: "Facebook Ads Image Resizer", description: "Resize to 1200×628 for Facebook ad creatives", category: "Facebook" },
+  { id: "facebook-square", name: "Facebook Square Image Maker", description: "Convert any image to square for Facebook posts", category: "Facebook" },
+  { id: "facebook-story", name: "Facebook Story Image Resizer", description: "Resize to 1080×1920 for Facebook Stories", category: "Facebook" },
+  { id: "facebook-optimizer", name: "Facebook Image Optimizer Tool", description: "Compress and optimise images for Facebook upload", category: "Facebook" },
+
   // Combine
   { id: "merge-images", name: "Merge Images", description: "Combine multiple images into one", category: "Combine" },
   { id: "split-image", name: "Split Image", description: "Split one image into multiple parts", category: "Combine" },
