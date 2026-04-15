@@ -244,7 +244,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
         <span className="font-mono text-xs border-2 border-black px-2 py-1 flex-shrink-0">FREE</span>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0 overflow-hidden">
         {/* LEFT: Upload + Before preview */}
         <div>
           {/* Upload area */}
@@ -346,7 +346,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
         {/* RIGHT: Controls + After */}
         <div className="flex flex-col gap-4">
           {/* Controls */}
-          <div className="border-2 border-black rounded-lg p-4">
+          <div className="border-2 border-black rounded-lg p-4 min-w-0 overflow-hidden">
             <p className="font-mono text-xs uppercase tracking-widest text-black/40 mb-4">Settings</p>
 
             {/* ── RESIZE controls ── */}
@@ -357,14 +357,13 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
                     Preset: <strong>{meta.resizePreset.label}</strong> — {meta.resizePreset.width} × {meta.resizePreset.height}px
                   </div>
                 )}
-                <div className="flex gap-3 items-center">
+                <div className="grid grid-cols-2 gap-2 items-center">
                   <input type="number" placeholder="Width (px)" value={resizeW}
                     onChange={(e) => setResizeW(e.target.value)}
-                    className="flex-1 border-2 border-black px-3 py-2 font-mono text-sm focus:outline-none bg-white" />
-                  <span className="font-mono text-black/30">×</span>
+                    className="w-full min-w-0 border-2 border-black px-2 py-2 font-mono text-sm focus:outline-none bg-white" />
                   <input type="number" placeholder="Height (px)" value={resizeH}
                     onChange={(e) => setResizeH(e.target.value)}
-                    className="flex-1 border-2 border-black px-3 py-2 font-mono text-sm focus:outline-none bg-white" />
+                    className="w-full min-w-0 border-2 border-black px-2 py-2 font-mono text-sm focus:outline-none bg-white" />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer select-none">
                   <input type="checkbox" checked={maintainRatio} onChange={(e) => setMaintainRatio(e.target.checked)} />
@@ -394,7 +393,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
                 <p className="font-mono text-xs text-black/50">Angle — <strong>{angle}°</strong></p>
                 <input type="range" min={-180} max={180} value={angle}
                   onChange={(e) => setAngle(Number(e.target.value))} className="w-full" />
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   {[-270,-180,-90,90,180,270].map((a) => (
                     <button key={a} onClick={() => setAngle(a)}
                       className={`font-mono text-xs px-2 py-1 border-2 border-black hover:bg-black hover:text-white transition-colors ${angle === a ? "bg-black text-white" : ""}`}>
@@ -411,7 +410,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
 
             {/* ── FLIP controls ── */}
             {meta.group === "flip" && (
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-2">
                 {[
                   { label: "↔ Horizontal", h: true, v: false },
                   { label: "↕ Vertical", h: false, v: true },
@@ -472,7 +471,7 @@ export default function UniversalImageTool({ toolId }: { toolId: string }) {
               <div className="space-y-3">
                 <div>
                   <p className="font-mono text-xs text-black/50 mb-2">Output Format</p>
-                  <div className="flex gap-2">
+                  <div className="flex flex-wrap gap-2">
                     {["jpg","png","webp"].map((fmt) => (
                       <button key={fmt} onClick={() => setConvertFmt(fmt)}
                         className={`font-mono text-xs uppercase px-3 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors ${convertFmt === fmt ? "bg-black text-white" : ""}`}>

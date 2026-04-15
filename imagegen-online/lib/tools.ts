@@ -48,8 +48,8 @@ export const TOOLS: Tool[] = [
   { id: "circle-maker", name: "Circle Image Maker", description: "Crop image into a circle shape", category: "Effects" },
 
   // Text & Watermark
-  { id: "watermark", name: "Image Watermark", description: "Add text or logo watermarks to images", category: "Watermark" },
-  { id: "add-text", name: "Add Text to Image", description: "Overlay custom text onto images", category: "Watermark" },
+  { id: "watermark", name: "Add Watermark to Photo Online Free", description: "Add text or image/logo watermark to photos — position, opacity, rotation", category: "Watermark" },
+  { id: "add-text", name: "Add Text to Image", description: "Overlay custom text or watermark onto images", category: "Watermark" },
   { id: "remove-background", name: "Remove Background", description: "Auto remove image backgrounds", category: "Watermark" },
 
   // Convert

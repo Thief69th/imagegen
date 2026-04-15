@@ -112,28 +112,62 @@ export async function processImage(file: File, opts: ProcessOptions): Promise<Bl
 
   // ── Resize ─────────────────────────────────────────────────
   if (opts.targetWidth || opts.targetHeight) {
-    let tw = opts.targetWidth ?? origW;
-    let th = opts.targetHeight ?? origH;
+    const targetW = opts.targetWidth ?? origW;
+    const targetH = opts.targetHeight ?? origH;
 
-    if (opts.maintainRatio !== false && opts.targetWidth && opts.targetHeight) {
-      const fit = opts.fit ?? "contain";
-      const scale = fit === "cover"
-        ? Math.max(tw / origW, th / origH)
-        : Math.min(tw / origW, th / origH);
-      tw = Math.round(origW * scale);
-      th = Math.round(origH * scale);
-    } else if (opts.maintainRatio !== false && opts.targetWidth && !opts.targetHeight) {
-      th = Math.round(origH * (opts.targetWidth / origW));
-    } else if (opts.maintainRatio !== false && opts.targetHeight && !opts.targetWidth) {
-      tw = Math.round(origW * (opts.targetHeight / origH));
+    // Only one dimension supplied → scale proportionally, no letterbox needed
+    if (!opts.targetWidth || !opts.targetHeight) {
+      let tw = targetW;
+      let th = targetH;
+      if (opts.targetWidth && !opts.targetHeight) {
+        th = Math.round(origH * (targetW / origW));
+      } else if (opts.targetHeight && !opts.targetWidth) {
+        tw = Math.round(origW * (targetH / origH));
+      }
+      canvas.width = tw;
+      canvas.height = th;
+      const ctx = canvas.getContext("2d")!;
+      if (opts.cssFilter) ctx.filter = opts.cssFilter;
+      ctx.drawImage(img, 0, 0, tw, th);
+      return toBlob(canvas, opts);
     }
 
-    canvas.width = tw;
-    canvas.height = th;
+    // Both dimensions supplied → canvas is ALWAYS exactly targetW × targetH
+    canvas.width = targetW;
+    canvas.height = targetH;
     const ctx = canvas.getContext("2d")!;
-    if (opts.cssFilter) ctx.filter = opts.cssFilter;
-    ctx.drawImage(img, 0, 0, tw, th);
-    if (opts.effect === "invert") invertPixels(ctx, tw, th);
+
+    const fitMode = opts.fit ?? "contain";
+
+    if (fitMode === "stretch" || opts.maintainRatio === false) {
+      // Stretch: fill exactly, ignore aspect ratio
+      if (opts.cssFilter) ctx.filter = opts.cssFilter;
+      ctx.drawImage(img, 0, 0, targetW, targetH);
+    } else if (fitMode === "cover") {
+      // Cover: scale up to fill entire target, crop excess, centered
+      const scale = Math.max(targetW / origW, targetH / origH);
+      const drawnW = Math.round(origW * scale);
+      const drawnH = Math.round(origH * scale);
+      const offsetX = Math.round((targetW - drawnW) / 2);
+      const offsetY = Math.round((targetH - drawnH) / 2);
+      if (opts.cssFilter) ctx.filter = opts.cssFilter;
+      ctx.drawImage(img, offsetX, offsetY, drawnW, drawnH);
+    } else {
+      // Contain (default): letterbox — fill background, center image
+      const bgColor = opts.squareBg ?? "#ffffff";
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(0, 0, targetW, targetH);
+      const scale = Math.min(targetW / origW, targetH / origH);
+      const drawnW = Math.round(origW * scale);
+      const drawnH = Math.round(origH * scale);
+      const offsetX = Math.round((targetW - drawnW) / 2);
+      const offsetY = Math.round((targetH - drawnH) / 2);
+      if (opts.cssFilter) ctx.filter = opts.cssFilter;
+      ctx.drawImage(img, offsetX, offsetY, drawnW, drawnH);
+    }
+
+    ctx.filter = "none";
+    if (opts.effect === "invert") invertPixels(ctx, targetW, targetH);
     return toBlob(canvas, opts);
   }
 

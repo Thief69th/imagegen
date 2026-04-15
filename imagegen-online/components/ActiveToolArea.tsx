@@ -13,6 +13,21 @@ const CollageMaker         = lazy(() => import("./tools/CollageMaker"));
 const ColorPalette         = lazy(() => import("./tools/ColorPalette"));
 const CompressTarget       = lazy(() => import("./tools/CompressTarget"));
 const MetadataRemover      = lazy(() => import("./tools/MetadataRemover"));
+const ImageWatermark       = lazy(() => import("./tools/ImageWatermark"));
+const SocialMediaTool      = lazy(() => import("./tools/SocialMediaTool"));
+
+// Instagram / WhatsApp / Facebook exact-size tools
+const SOCIAL_TOOLS = new Set([
+  // Instagram
+  "resize-instagram", "instagram-story", "instagram-reel", "instagram-dp",
+  "instagram-profile-pic", "instagram-square", "instagram-safe-zone",
+  // WhatsApp
+  "resize-whatsapp", "whatsapp-dp", "whatsapp-status",
+  "whatsapp-profile-crop", "whatsapp-square", "whatsapp-image-size",
+  // Facebook
+  "resize-facebook", "facebook-cover", "facebook-profile-pic",
+  "facebook-ads", "facebook-square", "facebook-story",
+]);
 
 // Tools that use the bulk multi-compressor UI
 const BULK_COMPRESS = new Set([
@@ -49,12 +64,14 @@ function ToolLoader() {
 function ToolRouter({ toolId }: { toolId: string }) {
   if (BULK_COMPRESS.has(toolId))         return <MultiImageCompressor />;
   if (COMPRESS_TARGET.has(toolId))       return <CompressTarget toolId={toolId} />;
+  if (SOCIAL_TOOLS.has(toolId))          return <SocialMediaTool toolId={toolId} />;
   if (toolId === "remove-background")    return <RemoveBackground />;
   if (toolId === "merge-images")         return <MergeImages />;
   if (toolId === "split-image" || toolId === "instagram-carousel") return <SplitImage />;
   if (toolId === "collage-maker")        return <CollageMaker />;
   if (toolId === "color-palette")        return <ColorPalette />;
   if (toolId === "remove-metadata")      return <MetadataRemover />;
+  if (toolId === "watermark" || toolId === "add-text") return <ImageWatermark />;
   // All remaining tools → universal handler
   return <UniversalImageTool toolId={toolId} key={toolId} />;
 }
@@ -71,7 +88,7 @@ export default function ActiveToolArea({ activeTool }: { activeTool: string }) {
   }, [activeTool]);
 
   return (
-    <section id="active-tool" className="w-full max-w-screen-xl mx-auto px-4 py-8 md:py-10">
+    <section id="active-tool" className="w-full max-w-screen-xl mx-auto px-4 py-8 md:py-10 overflow-hidden">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 mb-3">
         <span className="font-mono text-xs text-black/30 uppercase tracking-widest">imagegen.online</span>
