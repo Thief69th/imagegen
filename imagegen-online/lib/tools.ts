@@ -107,6 +107,12 @@ export const TOOLS: Tool[] = [
   { id: "merge-images", name: "Merge Images", description: "Combine multiple images into one", category: "Combine" },
   { id: "split-image", name: "Split Image", description: "Split one image into multiple parts", category: "Combine" },
   { id: "collage-maker", name: "Collage Maker", description: "Create beautiful image collages", category: "Combine" },
+
+  // Download
+  { id: "social-downloader", name: "Social Media Image Downloader", description: "Download public images from Instagram, Pinterest & Facebook — resize, convert & watermark", category: "Download" },
+  { id: "instagram-downloader", name: "Instagram Image Downloader", description: "Download public Instagram photos online free", category: "Download" },
+  { id: "pinterest-downloader", name: "Pinterest Image Downloader", description: "Download Pinterest images online free", category: "Download" },
+  { id: "facebook-downloader", name: "Facebook Image Downloader", description: "Download public Facebook photos online free", category: "Download" },
 ];
 
 export const CATEGORIES = Array.from(new Set(TOOLS.map((t) => t.category)));

@@ -15,6 +15,7 @@ const CompressTarget       = lazy(() => import("./tools/CompressTarget"));
 const MetadataRemover      = lazy(() => import("./tools/MetadataRemover"));
 const ImageWatermark       = lazy(() => import("./tools/ImageWatermark"));
 const SocialMediaTool      = lazy(() => import("./tools/SocialMediaTool"));
+const SocialDownloader     = lazy(() => import("./tools/SocialDownloader"));
 
 // Instagram / WhatsApp / Facebook exact-size tools
 const SOCIAL_TOOLS = new Set([
@@ -72,6 +73,11 @@ function ToolRouter({ toolId }: { toolId: string }) {
   if (toolId === "color-palette")        return <ColorPalette />;
   if (toolId === "remove-metadata")      return <MetadataRemover />;
   if (toolId === "watermark" || toolId === "add-text") return <ImageWatermark />;
+  // Social downloaders
+  if (toolId === "social-downloader" || toolId === "instagram-downloader" ||
+      toolId === "pinterest-downloader" || toolId === "facebook-downloader") {
+    return <SocialDownloader />;
+  }
   // All remaining tools → universal handler
   return <UniversalImageTool toolId={toolId} key={toolId} />;
 }

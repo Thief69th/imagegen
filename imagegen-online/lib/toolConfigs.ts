@@ -151,6 +151,12 @@ export const TOOL_META: Record<string, ToolMeta> = {
   "merge-images":           { group: "complex",   label: "Merge Images",              description: "Combine multiple images into one" },
   "split-image":            { group: "complex",   label: "Split Image",               description: "Split one image into multiple parts" },
   "collage-maker":          { group: "complex",   label: "Collage Maker",             description: "Create beautiful image collages" },
+
+  // ─── Social Downloader ────────────────────────────────────
+  "social-downloader":      { group: "complex",   label: "Social Media Image Downloader", description: "Download public images from Instagram, Pinterest & Facebook" },
+  "instagram-downloader":   { group: "complex",   label: "Instagram Image Downloader",    description: "Download public Instagram photos online free" },
+  "pinterest-downloader":   { group: "complex",   label: "Pinterest Image Downloader",    description: "Download Pinterest images online free" },
+  "facebook-downloader":    { group: "complex",   label: "Facebook Image Downloader",     description: "Download public Facebook photos online free" },
 };
 
 export function getToolMeta(id: string): ToolMeta {
