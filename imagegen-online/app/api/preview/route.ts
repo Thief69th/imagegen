@@ -1,18 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { detectPlatform, isValidUrl } from "@/lib/detectPlatform";
+import {
+  detectPlatform,
+  isValidUrl,
+  extractYouTubeThumbnail,
+  getYouTubeThumbnailUrls,
+} from "@/lib/detectPlatform";
 import { extractImageFromUrl } from "@/lib/scrapeImage";
-import { platformInfo } from "@/lib/platformInfo";
-
-type RequestBody = {
-  url: string;
-};
 
 export async function POST(req: NextRequest) {
   try {
-    const body: RequestBody = await req.json();
-    const { url } = body;
+    const { url } = await req.json();
 
-    // ❌ URL validation
     if (!url || !isValidUrl(url)) {
       return NextResponse.json(
         { success: false, message: "Invalid URL" },
@@ -20,29 +18,38 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 🔍 Platform detect
-    const platform = detectPlatform(url);
+    // 🔍 Detect platform (NEW STRUCTURE)
+    const platformData = detectPlatform(url);
 
-    // 🎨 Platform info
-    const info = platformInfo[platform] || {
-      name: "Unknown",
-      color: "#000000",
-    };
+    let image: string | null = null;
 
-    // 🖼️ Image extract
-    const image = await extractImageFromUrl(url);
+    // 🚀 Smart thumbnail extraction
+    if (platformData.platform === "youtube" || platformData.platform === "youtube-shorts") {
+      const videoId = extractYouTubeThumbnail(url);
+
+      if (videoId) {
+        const thumbs = getYouTubeThumbnailUrls(videoId);
+        image = thumbs.maxresdefault;
+      }
+    }
+
+    // 🔁 fallback scraping
+    if (!image) {
+      image = await extractImageFromUrl(url);
+    }
 
     return NextResponse.json({
       success: true,
       data: {
         url,
-        platform,
-        platformName: info.name,
-        color: info.color,
+        platform: platformData.platform,
+        label: platformData.label,
+        domain: platformData.domain,
+        supportsAutoThumbnail: platformData.supportsAutoThumbnail,
         image,
       },
     });
-  } catch (error) {
+  } catch (err) {
     return NextResponse.json(
       { success: false, message: "Server error" },
       { status: 500 }
