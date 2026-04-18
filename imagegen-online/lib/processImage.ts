@@ -9,7 +9,8 @@ export interface ProcessOptions {
   size: SizeOption;
   format: OutputFormat;
   quality: QualityLevel;
-  watermarkText: string;
+  watermarkText?: string;        // ✅ FIX: string से string? किया — undefined allow
+  watermarkPosition?: string;    // ✅ NEW: position support
 }
 
 const SIZE_MAP: Record<SizeOption, number | null> = {
@@ -33,9 +34,18 @@ export function buildWatermarkText(
   if (username) {
     const name = username.startsWith("@") ? username : `@${username}`;
     const platformName =
-      platform === "facebook" ? "Facebook" :
-      platform === "instagram" ? "Instagram" :
-      platform === "pinterest" ? "Pinterest" : "Web";
+      platform === "youtube"        ? "YouTube"    :
+      platform === "youtube-shorts" ? "YT Shorts"  :
+      platform === "tiktok"         ? "TikTok"     :
+      platform === "instagram"      ? "Instagram"  :
+      platform === "facebook"       ? "Facebook"   :
+      platform === "twitter"        ? "X / Twitter":
+      platform === "pinterest"      ? "Pinterest"  :
+      platform === "reddit"         ? "Reddit"     :
+      platform === "linkedin"       ? "LinkedIn"   :
+      platform === "twitch"         ? "Twitch"     :
+      platform === "vimeo"          ? "Vimeo"      :
+      "Web";
     return `${name} | ${platformName}`;
   }
   return `Source: ${domain || "web"}`;
@@ -46,14 +56,12 @@ async function createWatermarkOverlay(
   imgWidth: number,
   imgHeight: number
 ): Promise<Buffer> {
-  const fontSize = Math.max(14, Math.min(28, Math.round(imgWidth * 0.022)));
-  const padding = Math.round(fontSize * 0.75);
-  const textLen = text.length;
-  const estTextWidth = Math.round(textLen * fontSize * 0.55);
-  const overlayW = estTextWidth + padding * 2;
-  const overlayH = fontSize + padding * 2;
+  const fontSize    = Math.max(14, Math.min(28, Math.round(imgWidth * 0.022)));
+  const padding     = Math.round(fontSize * 0.75);
+  const estTextWidth= Math.round(text.length * fontSize * 0.55);
+  const overlayW    = estTextWidth + padding * 2;
+  const overlayH    = fontSize + padding * 2;
 
-  // SVG watermark with semi-transparent background + text
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${overlayW}" height="${overlayH}">
   <rect width="${overlayW}" height="${overlayH}" fill="rgba(0,0,0,0.45)" rx="4"/>
   <text
@@ -80,23 +88,55 @@ function escapeXml(str: string): string {
     .replace(/'/g, "&apos;");
 }
 
+/**
+ * Calculate watermark position (top-left corner of the watermark overlay)
+ * based on the position string and image/watermark dimensions.
+ */
+function calcWatermarkPosition(
+  position: string,
+  imgW: number,
+  imgH: number,
+  wmW: number,
+  wmH: number
+): { top: number; left: number } {
+  const margin = Math.max(10, Math.round(imgW * 0.015));
+
+  switch (position) {
+    case "top-left":
+      return { top: margin, left: margin };
+    case "top-right":
+      return { top: margin, left: Math.max(0, imgW - wmW - margin) };
+    case "bottom-left":
+      return { top: Math.max(0, imgH - wmH - margin), left: margin };
+    case "center":
+      return {
+        top:  Math.max(0, Math.round((imgH - wmH) / 2)),
+        left: Math.max(0, Math.round((imgW - wmW) / 2)),
+      };
+    case "bottom-right":
+    default:
+      return {
+        top:  Math.max(0, imgH - wmH - margin),
+        left: Math.max(0, imgW - wmW - margin),
+      };
+  }
+}
+
 export async function processImage(
   inputBuffer: Buffer,
   opts: ProcessOptions
 ): Promise<{ buffer: Buffer; mimeType: string; ext: string }> {
-  const { size, format, quality, watermarkText } = opts;
-  const q = QUALITY_MAP[quality];
+  const { size, format, quality, watermarkText, watermarkPosition = "bottom-right" } = opts;
+  const q           = QUALITY_MAP[quality];
   const targetWidth = SIZE_MAP[size];
 
-  // Get image metadata
-  const meta = await sharp(inputBuffer).metadata();
-  const origW = meta.width ?? 800;
+  const meta  = await sharp(inputBuffer).metadata();
+  const origW = meta.width  ?? 800;
   const origH = meta.height ?? 600;
 
-  // Start pipeline
   let pipeline = sharp(inputBuffer);
 
-  // Resize if needed
+  // Resize
   if (targetWidth && origW > targetWidth) {
     pipeline = pipeline.resize(targetWidth, null, {
       fit: "inside",
@@ -104,7 +144,7 @@ export async function processImage(
     });
   }
 
-  // Convert format with quality
+  // Format + quality
   if (format === "jpg") {
     pipeline = pipeline.jpeg({ quality: q, progressive: true, mozjpeg: true });
   } else if (format === "png") {
@@ -113,35 +153,27 @@ export async function processImage(
     pipeline = pipeline.webp({ quality: q, effort: 4 });
   }
 
-  // Get intermediate buffer to know final dimensions for watermark
   let processed = await pipeline.toBuffer();
 
-  // Add watermark
+  // ✅ watermarkText undefined या empty string हो तो watermark skip
   if (watermarkText) {
     const finalMeta = await sharp(processed).metadata();
-    const finalW = finalMeta.width ?? origW;
-    const finalH = finalMeta.height ?? origH;
+    const finalW    = finalMeta.width  ?? origW;
+    const finalH    = finalMeta.height ?? origH;
 
-    const wmBuf = await createWatermarkOverlay(watermarkText, finalW, finalH);
+    const wmBuf  = await createWatermarkOverlay(watermarkText, finalW, finalH);
     const wmMeta = await sharp(wmBuf).metadata();
-    const wmW = wmMeta.width ?? 200;
-    const wmH = wmMeta.height ?? 40;
+    const wmW    = wmMeta.width  ?? 200;
+    const wmH    = wmMeta.height ?? 40;
 
-    const margin = Math.max(10, Math.round(finalW * 0.015));
-    const left = Math.max(0, finalW - wmW - margin);
-    const top = Math.max(0, finalH - wmH - margin);
+    const { top, left } = calcWatermarkPosition(
+      watermarkPosition, finalW, finalH, wmW, wmH
+    );
 
-    // Re-composite watermark — must re-apply format after compositing
     let withWm = sharp(processed).composite([
-      {
-        input: wmBuf,
-        top,
-        left,
-        blend: "over",
-      },
+      { input: wmBuf, top, left, blend: "over" },
     ]);
 
-    // Re-apply format
     if (format === "jpg") {
       withWm = withWm.jpeg({ quality: q, mozjpeg: true });
     } else if (format === "png") {
@@ -155,7 +187,7 @@ export async function processImage(
 
   const mimeType =
     format === "jpg" ? "image/jpeg" :
-    format === "png" ? "image/png" :
+    format === "png" ? "image/png"  :
     "image/webp";
 
   const ext = format === "jpg" ? "jpg" : format;
