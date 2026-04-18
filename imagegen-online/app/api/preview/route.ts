@@ -7,10 +7,15 @@ import {
 } from "@/lib/detectPlatform";
 import { extractImageFromUrl } from "@/lib/scrapeImage";
 
+type RequestBody = {
+  url: string;
+};
+
 export async function POST(req: NextRequest) {
   try {
-    const { url } = await req.json();
+    const { url }: RequestBody = await req.json();
 
+    // ❌ URL validation
     if (!url || !isValidUrl(url)) {
       return NextResponse.json(
         { success: false, message: "Invalid URL" },
@@ -18,13 +23,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 🔍 Detect platform (NEW STRUCTURE)
+    // 🔍 Detect platform
     const platformData = detectPlatform(url);
 
     let image: string | null = null;
 
-    // 🚀 Smart thumbnail extraction
-    if (platformData.platform === "youtube" || platformData.platform === "youtube-shorts") {
+    // 🚀 YouTube smart thumbnail
+    if (
+      platformData.platform === "youtube" ||
+      platformData.platform === "youtube-shorts"
+    ) {
       const videoId = extractYouTubeThumbnail(url);
 
       if (videoId) {
