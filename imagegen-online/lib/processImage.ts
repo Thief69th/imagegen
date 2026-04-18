@@ -58,7 +58,7 @@ async function createWatermarkOverlay(
 ): Promise<Buffer> {
   const fontSize    = Math.max(14, Math.min(28, Math.round(imgWidth * 0.022)));
   const padding     = Math.round(fontSize * 0.75);
-  const estTextWidth= Math.round(text.length * fontSize * 0.55);
+  const estTextWidth = Math.round(text.length * fontSize * 0.55);
   const overlayW    = estTextWidth + padding * 2;
   const overlayH    = fontSize + padding * 2;
 
