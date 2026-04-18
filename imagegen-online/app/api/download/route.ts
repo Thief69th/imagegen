@@ -16,16 +16,16 @@ export const maxDuration = 60;
 
 type RequestBody = {
   imageUrl?: string;
-  videoUrl?: string;          // NEW: pass a YouTube / TikTok / etc. video URL directly
-  thumbnailQuality?: YouTubeThumbnailQuality; // NEW: max | hq | mq | sd | default
+  videoUrl?: string;
+  thumbnailQuality?: YouTubeThumbnailQuality;
   username?: string | null;
   platform?: string;
   domain?: string;
   size?: SizeOption;
   format?: OutputFormat;
   quality?: QualityLevel;
-  watermark?: boolean;        // NEW: opt-out of watermark
-  watermarkPosition?: WatermarkPosition; // NEW
+  watermark?: boolean;
+  watermarkPosition?: WatermarkPosition;
 };
 
 type YouTubeThumbnailQuality = "maxresdefault" | "hqdefault" | "mqdefault" | "sddefault" | "default";
@@ -33,9 +33,9 @@ type WatermarkPosition = "bottom-right" | "bottom-left" | "top-right" | "top-lef
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const VALID_SIZES: SizeOption[]         = ["original", "large", "medium", "small"];
-const VALID_FORMATS: OutputFormat[]     = ["jpg", "png", "webp"];
-const VALID_QUALITIES: QualityLevel[]   = ["high", "medium", "low"];
+const VALID_SIZES: SizeOption[]               = ["original", "large", "medium", "small"];
+const VALID_FORMATS: OutputFormat[]           = ["jpg", "png", "webp"];
+const VALID_QUALITIES: QualityLevel[]         = ["high", "medium", "low"];
 const VALID_WM_POSITIONS: WatermarkPosition[] = [
   "bottom-right", "bottom-left", "top-right", "top-left", "center",
 ];
@@ -49,10 +49,6 @@ function validate<T>(value: unknown, allowed: T[], fallback: T): T {
   return allowed.includes(value as T) ? (value as T) : fallback;
 }
 
-/**
- * Given a YouTube video URL or short URL, return the best available thumbnail URL.
- * Falls back through quality levels until one resolves successfully (checked server-side).
- */
 async function resolveBestYouTubeThumbnail(
   videoUrl: string,
   preferredQuality: YouTubeThumbnailQuality
@@ -68,10 +64,9 @@ async function resolveBestYouTubeThumbnail(
     "default",
   ];
 
-  // Start from the preferred quality, then fall back
   const preferred = VALID_YT_QUALITIES.includes(preferredQuality) ? preferredQuality : "maxresdefault";
-  const startIdx   = qualityFallback.indexOf(preferred);
-  const order      = [
+  const startIdx  = qualityFallback.indexOf(preferred);
+  const order     = [
     ...qualityFallback.slice(startIdx),
     ...qualityFallback.slice(0, startIdx),
   ];
@@ -80,11 +75,10 @@ async function resolveBestYouTubeThumbnail(
     const url = `https://img.youtube.com/vi/${videoId}/${q}.jpg`;
     try {
       const res = await fetch(url, { method: "HEAD" });
-      // YouTube returns a 120×90 placeholder for missing thumbs – filter it out
-      const w = res.headers.get("content-length");
+      const w   = res.headers.get("content-length");
       if (res.ok && (!w || parseInt(w) > 2000)) return url;
     } catch {
-      // network hiccup – try next quality
+      // try next quality
     }
   }
   return null;
@@ -119,7 +113,6 @@ export async function POST(req: NextRequest) {
   let imageUrl = rawImageUrl;
 
   if (!imageUrl && videoUrl) {
-    // Attempt to auto-resolve a thumbnail from a video URL
     if (!isValidUrl(videoUrl)) {
       return NextResponse.json({ error: "Invalid videoUrl." }, { status: 400 });
     }
@@ -127,7 +120,8 @@ export async function POST(req: NextRequest) {
     const platformInfo = detectPlatform(videoUrl);
 
     switch (platformInfo.platform) {
-      case "youtube": {
+      case "youtube":
+      case "youtube-shorts": {
         const resolved = await resolveBestYouTubeThumbnail(videoUrl, thumbnailQuality);
         if (!resolved) {
           return NextResponse.json(
@@ -140,7 +134,6 @@ export async function POST(req: NextRequest) {
       }
 
       case "tiktok": {
-        // TikTok oembed thumbnail extraction
         try {
           const oembedRes = await fetch(
             `https://www.tiktok.com/oembed?url=${encodeURIComponent(videoUrl)}`
@@ -179,7 +172,6 @@ export async function POST(req: NextRequest) {
       }
 
       case "twitch": {
-        // Twitch clip thumbnails via oembed
         try {
           const oembedRes = await fetch(
             `https://api.twitch.tv/v5/oembed?url=${encodeURIComponent(videoUrl)}`
@@ -200,7 +192,7 @@ export async function POST(req: NextRequest) {
       default:
         return NextResponse.json(
           {
-            error: `Automatic thumbnail extraction is not supported for platform "${platformInfo.platform}". Please pass imageUrl directly.`,
+            error: `Automatic thumbnail extraction is not supported for "${platformInfo.platform}". Please pass imageUrl directly.`,
           },
           { status: 400 }
         );
@@ -219,30 +211,31 @@ export async function POST(req: NextRequest) {
   }
 
   // ── 3. Validate & normalise options ───────────────────────────────────────
-  const finalSize      = validate(size,              VALID_SIZES,        "original" as SizeOption);
-  const finalFormat    = validate(format,            VALID_FORMATS,      "jpg"      as OutputFormat);
-  const finalQuality   = validate(quality,           VALID_QUALITIES,    "high"     as QualityLevel);
-  const finalWmPos     = validate(watermarkPosition, VALID_WM_POSITIONS, "bottom-right" as WatermarkPosition);
+  const finalSize    = validate(size,              VALID_SIZES,        "original"     as SizeOption);
+  const finalFormat  = validate(format,            VALID_FORMATS,      "jpg"          as OutputFormat);
+  const finalQuality = validate(quality,           VALID_QUALITIES,    "high"         as QualityLevel);
+  const finalWmPos   = validate(watermarkPosition, VALID_WM_POSITIONS, "bottom-right" as WatermarkPosition);
 
   // ── 4. Build watermark ────────────────────────────────────────────────────
   const platformInfo    = detectPlatform(imageUrl);
-  const resolvedDomain  = domain   ?? platformInfo.domain   ?? "imagegen.online";
+  const resolvedDomain  = domain ?? platformInfo.domain ?? "imagegen.online";
   const resolvedPlatform =
     (platform ?? platformInfo.platform) as ReturnType<typeof detectPlatform>["platform"];
 
-  const watermarkText = watermark
+  // ✅ FIX: null की जगह undefined use करो — processImage string | undefined expect करता है
+  const watermarkText: string | undefined = watermark
     ? buildWatermarkText(username ?? null, resolvedPlatform, resolvedDomain)
-    : null;
+    : undefined;
 
   // ── 5. Fetch → process → respond ─────────────────────────────────────────
   try {
     const rawBuffer = await fetchImageBuffer(imageUrl);
 
     const { buffer, mimeType, ext } = await processImage(rawBuffer, {
-      size: finalSize,
-      format: finalFormat,
-      quality: finalQuality,
-      watermarkText,
+      size:              finalSize,
+      format:            finalFormat,
+      quality:           finalQuality,
+      watermarkText:     watermarkText,  // ✅ अब string | undefined है
       watermarkPosition: finalWmPos,
     });
 
@@ -251,12 +244,12 @@ export async function POST(req: NextRequest) {
     return new NextResponse(buffer as unknown as BodyInit, {
       status: 200,
       headers: {
-        "Content-Type": mimeType,
+        "Content-Type":        mimeType,
         "Content-Disposition": `attachment; filename="${filename}"`,
-        "Content-Length": buffer.length.toString(),
-        "Cache-Control": "no-store",
-        "X-Platform": resolvedPlatform,
-        "X-Image-Source": imageUrl,
+        "Content-Length":      buffer.length.toString(),
+        "Cache-Control":       "no-store",
+        "X-Platform":          resolvedPlatform,
+        "X-Image-Source":      imageUrl,
       },
     });
   } catch (err: unknown) {
