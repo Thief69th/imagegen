@@ -11,6 +11,9 @@ type RequestBody = {
   url: string;
 };
 
+// 🔥 Scalable platform groups
+const YOUTUBE_PLATFORMS = ["youtube", "youtube-shorts"];
+
 export async function POST(req: NextRequest) {
   try {
     const { url }: RequestBody = await req.json();
@@ -28,20 +31,24 @@ export async function POST(req: NextRequest) {
 
     let image: string | null = null;
 
-    // 🚀 YouTube smart thumbnail
-    if (
-      platformData.platform === "youtube" ||
-      platformData.platform === "youtube-shorts"
-    ) {
+    // 🚀 YouTube Smart Thumbnail
+    if (YOUTUBE_PLATFORMS.includes(platformData.platform)) {
       const videoId = extractYouTubeThumbnail(url);
 
       if (videoId) {
         const thumbs = getYouTubeThumbnailUrls(videoId);
-        image = thumbs.maxresdefault;
+
+        // Best → fallback
+        image =
+          thumbs.maxresdefault ||
+          thumbs.hqdefault ||
+          thumbs.mqdefault ||
+          thumbs.sddefault ||
+          thumbs.default;
       }
     }
 
-    // 🔁 fallback scraping
+    // 🔁 Fallback scraping (for all other platforms)
     if (!image) {
       image = await extractImageFromUrl(url);
     }
