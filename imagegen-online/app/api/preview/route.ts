@@ -1,24 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import {
-  detectPlatform,
-  isValidUrl,
-  extractYouTubeThumbnail,
-  getYouTubeThumbnailUrls,
-} from "@/lib/detectPlatform";
-import { extractImageFromUrl } from "@/lib/scrapeImage";
-
-type RequestBody = {
-  url: string;
-};
-
-// 🔥 Scalable platform groups
-const YOUTUBE_PLATFORMS = ["youtube", "youtube-shorts"];
-
 export async function POST(req: NextRequest) {
   try {
     const { url }: RequestBody = await req.json();
 
-    // ❌ URL validation
     if (!url || !isValidUrl(url)) {
       return NextResponse.json(
         { success: false, message: "Invalid URL" },
@@ -26,31 +9,28 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // 🔍 Detect platform
     const platformData = detectPlatform(url);
 
     let image: string | null = null;
 
-    // 🚀 YouTube Smart Thumbnail
+    // 🎯 Platform-based extraction
     if (YOUTUBE_PLATFORMS.includes(platformData.platform)) {
       const videoId = extractYouTubeThumbnail(url);
 
       if (videoId) {
         const thumbs = getYouTubeThumbnailUrls(videoId);
-
-        // Best → fallback
-        image =
-          thumbs.maxresdefault ||
-          thumbs.hqdefault ||
-          thumbs.mqdefault ||
-          thumbs.sddefault ||
-          thumbs.default;
+        image = await getValidImage(Object.values(thumbs));
       }
     }
 
-    // 🔁 Fallback scraping (for all other platforms)
+    // 🌐 Universal fallback
     if (!image) {
       image = await extractImageFromUrl(url);
+    }
+
+    // 🔗 Fix relative URLs
+    if (image && image.startsWith("/")) {
+      image = new URL(image, url).href;
     }
 
     return NextResponse.json({
