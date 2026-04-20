@@ -46,10 +46,21 @@ export const TOOLS: Tool[] = [
   { id: "remove-border", name: "Remove Border", description: "Detect and remove image borders", category: "Effects" },
   { id: "square-maker", name: "Square Image Maker", description: "Convert any image to perfect square", category: "Effects" },
   { id: "circle-maker", name: "Circle Image Maker", description: "Crop image into a circle shape", category: "Effects" },
+  { id: "sepia-effect", name: "Sepia Effect", description: "Apply warm sepia tone to any photo", category: "Effects" },
+  { id: "vintage-effect", name: "Vintage Photo Effect", description: "Add retro film grain vintage look to images", category: "Effects" },
+  { id: "pixelate-image", name: "Pixelate Image", description: "Create mosaic pixel-art effect from photos", category: "Effects" },
+  { id: "vignette-effect", name: "Add Vignette Effect", description: "Darken edges for dramatic vignette look", category: "Effects" },
+  { id: "duotone-effect", name: "Duotone Effect", description: "Apply two-colour duotone to images", category: "Effects" },
+  { id: "glitch-effect", name: "Glitch Effect", description: "Add digital glitch distortion to photos", category: "Effects" },
+  { id: "sketch-effect", name: "Photo to Pencil Sketch", description: "Convert photo to pencil sketch drawing", category: "Effects" },
+  { id: "posterize-effect", name: "Posterize Image", description: "Reduce colours for bold poster-style effect", category: "Effects" },
+  { id: "add-rounded-corners", name: "Rounded Corners Image", description: "Add rounded corners to images — outputs PNG", category: "Effects" },
+  { id: "image-opacity", name: "Change Image Opacity", description: "Make image semi-transparent — adjust opacity level", category: "Effects" },
+  { id: "image-frame", name: "Photo Frame Generator", description: "Add decorative solid frames to photos", category: "Effects" },
 
   // Text & Watermark
-  { id: "watermark", name: "Add Watermark to Photo Online Free", description: "Add text or image/logo watermark to photos — position, opacity, rotation", category: "Watermark" },
-  { id: "add-text", name: "Add Text to Image", description: "Overlay custom text or watermark onto images", category: "Watermark" },
+  { id: "watermark", name: "Image Watermark", description: "Add text or logo watermarks to images", category: "Watermark" },
+  { id: "add-text", name: "Add Text to Image", description: "Overlay custom text onto images", category: "Watermark" },
   { id: "remove-background", name: "Remove Background", description: "Auto remove image backgrounds", category: "Watermark" },
 
   // Convert
@@ -65,54 +76,28 @@ export const TOOLS: Tool[] = [
   { id: "tiff-to-jpg", name: "TIFF to JPG", description: "Convert TIFF images to JPG format", category: "Convert" },
   { id: "batch-convert", name: "Batch Image Convert", description: "Convert many images between formats", category: "Convert" },
 
-  // Lossless / Metadata / Palette
-  { id: "lossless-convert", name: "Convert Without Loss", description: "Convert image to lossless PNG — zero quality loss", category: "Convert" },
-  { id: "lossless-compress", name: "Lossless Image Compressor", description: "Compress image without any quality loss", category: "Compress" },
-  { id: "remove-metadata", name: "Remove Image Metadata", description: "Strip EXIF data, GPS location, camera info — 100% private", category: "Convert" },
-  { id: "color-palette", name: "Color Palette Extractor", description: "Extract dominant color palette from any image", category: "Effects" },
-
-  // Target-size compress
-  { id: "compress-under-100kb", name: "Compress Under 100KB", description: "Auto-compress image to under 100KB file size", category: "Compress" },
-  { id: "compress-under-50kb", name: "Compress Under 50KB", description: "Auto-compress image to under 50KB file size", category: "Compress" },
-  { id: "smart-compress", name: "Smart Image Compressor", description: "Compress to your custom target file size", category: "Compress" },
-
-  // Instagram
-  { id: "instagram-story", name: "Instagram Story Size Tool", description: "Resize to 1080×1920 for Instagram Stories", category: "Instagram" },
-  { id: "instagram-reel", name: "Instagram Reel Thumbnail Maker", description: "Resize to 1080×1920 for Instagram Reels cover", category: "Instagram" },
-  { id: "instagram-dp", name: "Instagram DP Size Converter", description: "Resize to 320×320 for Instagram profile picture", category: "Instagram" },
-  { id: "instagram-profile-pic", name: "Instagram Profile Picture Resizer", description: "Perfect dimensions for Instagram profile photo", category: "Instagram" },
-  { id: "instagram-square", name: "Instagram Square Image Maker", description: "Convert any image to 1:1 square for Instagram", category: "Instagram" },
-  { id: "instagram-carousel", name: "Instagram Carousel Image Splitter", description: "Split wide image into carousel panels", category: "Instagram" },
-  { id: "instagram-safe-zone", name: "Instagram Story Safe Zone Tool", description: "Overlay safe-zone guide onto story images", category: "Instagram" },
-  { id: "compress-instagram", name: "Compress Image for Instagram", description: "Compress and optimise images for Instagram upload", category: "Instagram" },
-
-  // WhatsApp
-  { id: "whatsapp-dp", name: "WhatsApp DP Image Resizer", description: "Resize to 640×640 for WhatsApp profile photo", category: "WhatsApp" },
-  { id: "whatsapp-status", name: "WhatsApp Status Image Size Tool", description: "Resize to 1080×1920 for WhatsApp Status", category: "WhatsApp" },
-  { id: "whatsapp-profile-crop", name: "WhatsApp Profile Photo Crop Tool", description: "Square crop for perfect WhatsApp profile photo", category: "WhatsApp" },
-  { id: "whatsapp-square", name: "WhatsApp Square Image Maker", description: "Convert any image to square for WhatsApp", category: "WhatsApp" },
-  { id: "whatsapp-image-size", name: "WhatsApp Image Size Converter", description: "Convert image to recommended 1600×900 WhatsApp size", category: "WhatsApp" },
-  { id: "whatsapp-optimizer", name: "WhatsApp Image Optimizer Tool", description: "Optimise and compress images for WhatsApp", category: "WhatsApp" },
-  { id: "compress-whatsapp", name: "Compress Image for WhatsApp", description: "Reduce file size for fast WhatsApp sharing", category: "WhatsApp" },
-
-  // Facebook
-  { id: "facebook-cover", name: "Facebook Cover Photo Resizer Tool", description: "Resize to 820×312 for Facebook cover photo", category: "Facebook" },
-  { id: "facebook-profile-pic", name: "Facebook Profile Picture Size Tool", description: "Resize to 320×320 for Facebook profile photo", category: "Facebook" },
-  { id: "facebook-ads", name: "Facebook Ads Image Resizer", description: "Resize to 1200×628 for Facebook ad creatives", category: "Facebook" },
-  { id: "facebook-square", name: "Facebook Square Image Maker", description: "Convert any image to square for Facebook posts", category: "Facebook" },
-  { id: "facebook-story", name: "Facebook Story Image Resizer", description: "Resize to 1080×1920 for Facebook Stories", category: "Facebook" },
-  { id: "facebook-optimizer", name: "Facebook Image Optimizer Tool", description: "Compress and optimise images for Facebook upload", category: "Facebook" },
-
   // Combine
   { id: "merge-images", name: "Merge Images", description: "Combine multiple images into one", category: "Combine" },
   { id: "split-image", name: "Split Image", description: "Split one image into multiple parts", category: "Combine" },
   { id: "collage-maker", name: "Collage Maker", description: "Create beautiful image collages", category: "Combine" },
 
+  // Social Media
+  { id: "social-media-kit", name: "Social Media Image Kit", description: "Resize & brand images for Instagram, Facebook, YouTube, Pinterest & more", category: "Social" },
+
+  // Target Size
+  { id: "target-size-compressor", name: "Compress to Exact Size", description: "Compress image to exact target size: 10KB, 20KB, 50KB, 1MB, or any custom size", category: "Compress" },
+
+  // Utility (Low Competition)
+  { id: "remove-exif", name: "Remove EXIF Data", description: "Strip metadata from images to protect location & privacy", category: "Utility" },
+  { id: "image-to-base64", name: "Image to Base64", description: "Convert any image to Base64 encoded string for web use", category: "Utility" },
+  { id: "base64-to-image", name: "Base64 to Image", description: "Decode Base64 string back to downloadable image file", category: "Utility" },
+  { id: "image-color-picker", name: "Image Color Picker", description: "Extract dominant colors and HEX codes from any image", category: "Utility" },
+  { id: "aspect-ratio-crop", name: "Aspect Ratio Cropper", description: "Crop image to exact ratio: 16:9, 4:3, 1:1, 9:16, 3:2", category: "Edit" },
+  { id: "meme-text-generator", name: "Meme Text Generator", description: "Add bold impact-font top and bottom text for memes", category: "Watermark" },
+
   // Download
-  { id: "social-downloader", name: "Social Media Image Downloader", description: "Download public images from Instagram, Pinterest & Facebook — resize, convert & watermark", category: "Download" },
-  { id: "instagram-downloader", name: "Instagram Image Downloader", description: "Download public Instagram photos online free", category: "Download" },
-  { id: "pinterest-downloader", name: "Pinterest Image Downloader", description: "Download Pinterest images online free", category: "Download" },
-  { id: "facebook-downloader", name: "Facebook Image Downloader", description: "Download public Facebook photos online free", category: "Download" },
+  { id: "social-image-downloader", name: "Social Media Image Downloader", description: "Download images & thumbnails from YouTube, Pinterest, Twitter, Reddit, Imgur & more", category: "Download" },
+  { id: "youtube-thumbnail-downloader", name: "YouTube Thumbnail Downloader", description: "Download YouTube video thumbnails in all sizes — maxres, HD, SD, default", category: "Download" },
 ];
 
 export const CATEGORIES = Array.from(new Set(TOOLS.map((t) => t.category)));

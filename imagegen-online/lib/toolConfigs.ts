@@ -1,191 +1,115 @@
-// lib/toolConfigs.ts
-import { ToolConfig, ToolType } from './types';
+export type ToolGroup =
+  | "compress"
+  | "resize"
+  | "rotate"
+  | "flip"
+  | "adjust"
+  | "effect"
+  | "convert"
+  | "border"
+  | "square"
+  | "circle"
+  | "crop"
+  | "text"
+  | "sharpen"
+  | "complex";
 
-export const TOOL_CONFIGS: Record<ToolType, ToolConfig> = {
-  // Compression Tools
-  'compress': {
-    id: 'compress',
-    name: 'Compress Image',
-    description: 'Reduce image file size without losing quality',
-    category: 'compress',
-    icon: 'compress',
-    supportsBulk: true,
-    acceptedTypes: ['image/jpeg', 'image/png', 'image/webp'],
-    defaultOptions: { quality: 80, format: 'original' }
-  },
-  'compress-bulk': {
-    id: 'compress-bulk',
-    name: 'Bulk Compress',
-    description: 'Compress multiple images at once',
-    category: 'compress',
-    icon: 'compress',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { quality: 80 }
-  },
-
-  // Resize Tools
-  'resize': {
-    id: 'resize',
-    name: 'Resize Image',
-    description: 'Change image dimensions',
-    category: 'resize',
-    icon: 'resize',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { width: 1920, height: 1080, maintainAspectRatio: true }
-  },
-  'resize-percentage': {
-    id: 'resize-percentage',
-    name: 'Resize by %',
-    description: 'Scale image by percentage',
-    category: 'resize',
-    icon: 'resize',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { scale: 50 }
-  },
-
-  // Format Conversion
-  'convert': {
-    id: 'convert',
-    name: 'Convert Format',
-    description: 'Convert between JPG, PNG, WEBP, GIF',
-    category: 'convert',
-    icon: 'convert',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { format: 'image/webp', quality: 92 }
-  },
-  'heic-to-jpg': {
-    id: 'heic-to-jpg',
-    name: 'HEIC to JPG',
-    description: 'Convert iPhone HEIC photos to JPG',
-    category: 'convert',
-    icon: 'convert',
-    supportsBulk: true,
-    acceptedTypes: ['image/heic', 'image/heif'],
-    defaultOptions: { format: 'image/jpeg', quality: 90 }
-  },
-
-  // Edit Tools
-  'rotate': {
-    id: 'rotate',
-    name: 'Rotate Image',
-    description: 'Rotate image by degrees',
-    category: 'edit',
-    icon: 'rotate',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { rotation: 90 }
-  },
-  'flip': {
-    id: 'flip',
-    name: 'Flip Image',
-    description: 'Flip image horizontally or vertically',
-    category: 'edit',
-    icon: 'flip',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { flipX: false, flipY: false }
-  },
-  'crop': {
-    id: 'crop',
-    name: 'Crop Image',
-    description: 'Crop image to custom dimensions',
-    category: 'edit',
-    icon: 'crop',
-    supportsBulk: false,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { aspectRatio: 'free' }
-  },
-  'effects': {
-    id: 'effects',
-    name: 'Image Effects',
-    description: 'Apply filters: grayscale, blur, brightness, contrast',
-    category: 'edit',
-    icon: 'effects',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { brightness: 100, contrast: 100, saturation: 100 }
-  },
-
-  // AI Tools
-  'remove-background': {
-    id: 'remove-background',
-    name: 'Remove Background',
-    description: 'AI-powered background removal',
-    category: 'ai',
-    icon: 'magic',
-    supportsBulk: false,
-    acceptedTypes: ['image/jpeg', 'image/png'],
-    defaultOptions: {}
-  },
-
-  // Combine Tools
-  'merge-images': {
-    id: 'merge-images',
-    name: 'Merge Images',
-    description: 'Combine multiple images side by side',
-    category: 'combine',
-    icon: 'merge',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { direction: 'horizontal', spacing: 10 }
-  },
-  'split-image': {
-    id: 'split-image',
-    name: 'Split Image',
-    description: 'Split image into grid sections',
-    category: 'combine',
-    icon: 'split',
-    supportsBulk: false,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { rows: 2, cols: 2 }
-  },
-  'collage-maker': {
-    id: 'collage-maker',
-    name: 'Collage Maker',
-    description: 'Create photo collages with layouts',
-    category: 'combine',
-    icon: 'collage',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { layout: 'grid-2x2', spacing: 5 }
-  },
-
-  // Social Media
-  'social-media': {
-    id: 'social-media',
-    name: 'Social Media Sizes',
-    description: 'Resize for Instagram, Facebook, Twitter, etc.',
-    category: 'social',
-    icon: 'social',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { platform: 'instagram-post' }
-  },
-
-  // Watermark
-  'add-watermark': {
-    id: 'add-watermark',
-    name: 'Add Watermark',
-    description: 'Add text or image watermark',
-    category: 'edit',
-    icon: 'watermark',
-    supportsBulk: true,
-    acceptedTypes: ['image/*'],
-    defaultOptions: { text: '', position: 'bottom-right', opacity: 0.7 }
-  },
-
-  // Add remaining tools with similar structure...
-  // For tools not fully implemented, set supportsBulk: false and add TODO comments
-};
-
-export function getToolConfig(toolId: ToolType): ToolConfig | undefined {
-  return TOOL_CONFIGS[toolId];
+export interface ResizePreset {
+  label: string;
+  width: number;
+  height: number;
 }
 
-export function getToolsByCategory(category: string): ToolConfig[] {
-  return Object.values(TOOL_CONFIGS).filter(tool => tool.category === category);
+export interface ToolMeta {
+  group: ToolGroup;
+  label: string;
+  description: string;
+  adjustFilter?: string;   // CSS filter property name for adjust tools
+  adjustMin?: number;
+  adjustMax?: number;
+  adjustDefault?: number;
+  adjustUnit?: string;
+  effectType?: "grayscale" | "invert" | "sepia" | "blur-bg" | "noise" | "edge";
+  convertFrom?: string;
+  convertTo?: string;
+  resizePreset?: ResizePreset;
+  bulk?: boolean;
+}
+
+export const TOOL_META: Record<string, ToolMeta> = {
+  // ─── Compress ───────────────────────────────────────────
+  "image-compressor":       { group: "compress",  label: "Image Compressor",          description: "Compress a single image with quality control", bulk: false },
+  "bulk-image-compressor":  { group: "compress",  label: "Bulk Image Compressor",     description: "Compress multiple images at once", bulk: true },
+  "reduce-image-size":      { group: "compress",  label: "Reduce Image Size",         description: "Shrink image file size", bulk: false },
+  "compress-for-web":       { group: "compress",  label: "Compress for Web",          description: "Optimise images for fast web loading", bulk: true },
+  "compress-for-email":     { group: "compress",  label: "Compress for Email",        description: "Reduce size for email attachments", bulk: true },
+  "compress-for-social":    { group: "compress",  label: "Compress for Social Media", description: "Perfect sizes for social platforms", bulk: true },
+
+  // ─── Resize ─────────────────────────────────────────────
+  "image-resizer":          { group: "resize",    label: "Image Resizer",             description: "Resize image to exact dimensions" },
+  "create-thumbnail":       { group: "resize",    label: "Create Thumbnail",          description: "Generate optimised image thumbnails", resizePreset: { label: "Thumbnail", width: 300, height: 300 } },
+  "resize-instagram":       { group: "resize",    label: "Resize for Instagram",      description: "Square 1080×1080 for Instagram posts", resizePreset: { label: "Instagram", width: 1080, height: 1080 } },
+  "resize-whatsapp":        { group: "resize",    label: "Resize for WhatsApp",       description: "Optimised for WhatsApp sharing", resizePreset: { label: "WhatsApp", width: 1600, height: 900 } },
+  "resize-facebook":        { group: "resize",    label: "Resize for Facebook",       description: "Correct sizes for Facebook posts", resizePreset: { label: "Facebook Post", width: 1200, height: 630 } },
+  "resize-website":         { group: "resize",    label: "Resize for Website",        description: "Web-ready image dimensions", resizePreset: { label: "Web Banner", width: 1920, height: 1080 } },
+  "change-resolution":      { group: "resize",    label: "Change Image Resolution",   description: "Modify image pixel resolution" },
+  "change-dpi":             { group: "resize",    label: "Change Image DPI",          description: "Adjust image DPI for print or web" },
+  "batch-image-resize":     { group: "resize",    label: "Batch Image Resize",        description: "Resize many images at once", bulk: true },
+
+  // ─── Rotate ─────────────────────────────────────────────
+  "image-rotate":           { group: "rotate",    label: "Image Rotate",              description: "Rotate image by any angle" },
+
+  // ─── Flip ───────────────────────────────────────────────
+  "image-flip":             { group: "flip",      label: "Image Flip",                description: "Flip image horizontally or vertically" },
+  "image-mirror":           { group: "flip",      label: "Image Mirror",              description: "Create mirror reflections of images" },
+
+  // ─── Adjustments (slider) ───────────────────────────────
+  "image-blur":             { group: "adjust",    label: "Image Blur",                description: "Apply blur effect", adjustFilter: "blur", adjustMin: 0, adjustMax: 20, adjustDefault: 5, adjustUnit: "px" },
+  "image-brightness":       { group: "adjust",    label: "Brightness Adjust",         description: "Adjust brightness levels", adjustFilter: "brightness", adjustMin: 0, adjustMax: 200, adjustDefault: 100, adjustUnit: "%" },
+  "contrast-adjust":        { group: "adjust",    label: "Contrast Adjust",           description: "Fine-tune contrast settings", adjustFilter: "contrast", adjustMin: 0, adjustMax: 200, adjustDefault: 100, adjustUnit: "%" },
+  "saturation-adjust":      { group: "adjust",    label: "Saturation Adjust",         description: "Boost or reduce colour saturation", adjustFilter: "saturate", adjustMin: 0, adjustMax: 300, adjustDefault: 100, adjustUnit: "%" },
+  "image-sharpen":          { group: "sharpen",   label: "Image Sharpen",             description: "Enhance sharpness and clarity", adjustMin: 0, adjustMax: 5, adjustDefault: 2 },
+  "noise-reduction":        { group: "adjust",    label: "Noise Reduction",           description: "Reduce grain and noise", adjustFilter: "blur", adjustMin: 0, adjustMax: 3, adjustDefault: 1, adjustUnit: "px" },
+  "edge-enhance":           { group: "adjust",    label: "Edge Enhance",              description: "Sharpen and define image edges", adjustFilter: "contrast", adjustMin: 100, adjustMax: 250, adjustDefault: 150, adjustUnit: "%" },
+
+  // ─── Effects (no controls needed) ───────────────────────
+  "grayscale":              { group: "effect",    label: "Convert to Grayscale",      description: "Turn colour images to black & white", effectType: "grayscale" },
+  "color-invert":           { group: "effect",    label: "Color Invert",              description: "Invert all colours in an image", effectType: "invert" },
+  "background-blur":        { group: "adjust",    label: "Background Blur",           description: "Blur background, keep subject", adjustFilter: "blur", adjustMin: 0, adjustMax: 15, adjustDefault: 6, adjustUnit: "px" },
+
+  // ─── Conversion ─────────────────────────────────────────
+  "png-to-jpg":             { group: "convert",   label: "PNG to JPG",                description: "Convert PNG to JPG format", convertFrom: "PNG", convertTo: "jpg" },
+  "jpg-to-png":             { group: "convert",   label: "JPG to PNG",                description: "Convert JPG to PNG format", convertFrom: "JPG", convertTo: "png" },
+  "jpg-to-webp":            { group: "convert",   label: "JPG to WEBP",               description: "Convert JPG to WEBP format", convertFrom: "JPG", convertTo: "webp" },
+  "webp-to-jpg":            { group: "convert",   label: "WEBP to JPG",               description: "Convert WEBP to JPG format", convertFrom: "WEBP", convertTo: "jpg" },
+  "png-to-webp":            { group: "convert",   label: "PNG to WEBP",               description: "Convert PNG to WEBP format", convertFrom: "PNG", convertTo: "webp" },
+  "webp-to-png":            { group: "convert",   label: "WEBP to PNG",               description: "Convert WEBP to PNG format", convertFrom: "WEBP", convertTo: "png" },
+  "gif-to-jpg":             { group: "convert",   label: "GIF to JPG",                description: "Convert GIF to JPG format", convertFrom: "GIF", convertTo: "jpg" },
+  "gif-to-png":             { group: "convert",   label: "GIF to PNG",                description: "Convert GIF to PNG format", convertFrom: "GIF", convertTo: "png" },
+  "tiff-to-jpg":            { group: "convert",   label: "TIFF to JPG",               description: "Convert TIFF to JPG format", convertFrom: "TIFF", convertTo: "jpg" },
+  "heic-to-jpg":            { group: "convert",   label: "HEIC to JPG",               description: "Convert iPhone HEIC to JPG", convertFrom: "HEIC", convertTo: "jpg" },
+  "batch-convert":          { group: "convert",   label: "Batch Image Convert",        description: "Convert many images between formats", bulk: true, convertTo: "jpg" },
+
+  // ─── Shape tools ─────────────────────────────────────────
+  "square-maker":           { group: "square",    label: "Square Image Maker",        description: "Convert image to perfect square" },
+  "circle-maker":           { group: "circle",    label: "Circle Image Maker",        description: "Crop image into circle shape" },
+  "add-border":             { group: "border",    label: "Add Border to Image",       description: "Add custom borders around images" },
+  "remove-border":          { group: "effect",    label: "Remove Border",             description: "Auto-detect and remove image borders", effectType: "grayscale" },
+
+  // ─── Crop ────────────────────────────────────────────────
+  "image-crop":             { group: "crop",      label: "Image Crop",                description: "Crop images to any shape or ratio" },
+
+  // ─── Text / Watermark ────────────────────────────────────
+  "watermark":              { group: "text",      label: "Image Watermark",           description: "Add text or logo watermarks to images" },
+  "add-text":               { group: "text",      label: "Add Text to Image",         description: "Overlay custom text onto images" },
+
+  // ─── Complex (needs ML/server) ───────────────────────────
+  "remove-background":      { group: "complex",   label: "Remove Background",         description: "Auto remove image background — requires AI API" },
+  "merge-images":           { group: "complex",   label: "Merge Images",              description: "Combine multiple images into one" },
+  "split-image":            { group: "complex",   label: "Split Image",               description: "Split one image into multiple parts" },
+  "collage-maker":          { group: "complex",   label: "Collage Maker",             description: "Create beautiful image collages" },
+};
+
+export function getToolMeta(id: string): ToolMeta {
+  return TOOL_META[id] ?? { group: "complex", label: id, description: "Tool coming soon" };
 }

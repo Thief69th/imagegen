@@ -389,16 +389,17 @@ export default function MultiImageCompressor() {
           <p className="font-mono text-xs uppercase tracking-widest text-black/60 mb-2">
             Resize — Optional (leave blank = keep original size)
           </p>
-          <div className="grid grid-cols-2 gap-3 items-center">
+          <div className="flex gap-3 items-center">
             <input
               type="number" placeholder="Max Width (px)" value={resizeWidth}
               onChange={(e) => setResizeWidth(e.target.value)}
-              className="w-full min-w-0 border-2 border-black px-2 py-2 font-mono text-sm focus:outline-none bg-white"
+              className="flex-1 border-2 border-black px-3 py-2 font-mono text-sm focus:outline-none bg-white"
             />
+            <span className="font-mono text-black/30">×</span>
             <input
               type="number" placeholder="Max Height (px)" value={resizeHeight}
               onChange={(e) => setResizeHeight(e.target.value)}
-              className="w-full min-w-0 border-2 border-black px-2 py-2 font-mono text-sm focus:outline-none bg-white"
+              className="flex-1 border-2 border-black px-3 py-2 font-mono text-sm focus:outline-none bg-white"
             />
           </div>
         </div>
